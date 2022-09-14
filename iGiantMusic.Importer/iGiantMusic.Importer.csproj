@@ -7,4 +7,14 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Facepunch.Steamworks" Version="2.3.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="steam_api64.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>
