@@ -90,6 +90,7 @@ if (_processFailed)
             }
             else Environment.Exit(1);
         }
+        else Environment.Exit(1);
     }
     else
     {
