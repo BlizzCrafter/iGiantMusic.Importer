@@ -1,4 +1,6 @@
 ﻿using Steamworks;
+using Steamworks.Data;
+using Steamworks.Ugc;
 using System.Diagnostics;
 
 AppId SweetTransitAppID = new AppId()
@@ -11,12 +13,39 @@ AppId IndustryGiantAppID = new AppId()
     Value = 271360
 };
 
+SteamId ModderID = new SteamId()
+{
+    Value = 76561198011297342
+};
+
+PublishedFileId ModID = new PublishedFileId()
+{
+    Value = 2862923991
+};
+
 bool _processFailed = false;
 bool _industryGiantInstalled = false;
+
+async Task<string?> UgcQuerry(Query query)
+{
+    Console.WriteLine($"### Querry Steam Workshop, please wait...");
+    var result = await query.GetPageAsync(1);
+    if (result.HasValue)
+    {
+        Console.WriteLine($"### ... Success!");
+        Console.WriteLine();
+
+        var mod = result.Value.Entries.Where(x => x.Id.Value == ModID.Value).First();
+        return mod.Directory;
+    }
+
+    return null;
+}
 
 try
 {
     Console.WriteLine("### Steam Initialization...");
+    Console.WriteLine();
 
     SteamClient.Init(SweetTransitAppID);
 
@@ -34,14 +63,22 @@ try
     }
     else
     {
-        string sweetTransitInstallDir = SteamApps.AppInstallDir(SweetTransitAppID);
+        var q = Query.All;
+        q.WhereUserPublished(ModderID);
+        
+        var modPath = await UgcQuerry(q);        
+        if (modPath == null)
+        {
+            throw new Exception("It is currently not possible to get the mod in the steam workshop. Please try again later!");
+        }
+
         string industryGiantInstallDir = SteamApps.AppInstallDir(IndustryGiantAppID);
 
-        Console.WriteLine($"Sweet Transit dir: {sweetTransitInstallDir}");
+        Console.WriteLine($"Mod dir: {modPath}");
         Console.WriteLine($"Industry Giant II dir: {industryGiantInstallDir}");
         Console.WriteLine();
 
-        DirectoryInfo iGiantMusicPath = new DirectoryInfo(Path.Combine(sweetTransitInstallDir, "Data", "iGiantMusic", "Music"));
+        DirectoryInfo iGiantMusicPath = new DirectoryInfo(Path.Combine(modPath, "Music"));
         DirectoryInfo industryGiantMusicPath = new DirectoryInfo(Path.Combine(industryGiantInstallDir, "soundtrack"));
 
         FileInfo[] industryGiantMusicFiles = industryGiantMusicPath.GetFiles();
